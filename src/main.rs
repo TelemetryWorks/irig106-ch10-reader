@@ -674,8 +674,8 @@ fn main() {
         println!("  ✓ TMATS PRESENT on Channel 0 ({}).", HumanBytes(stats.total_data_bytes));
         println!("    TMATS contains the recording configuration and EU calibration coefficients");
         println!("    (polynomial coefficients for converting raw sensor counts to engineering units).");
-        println!("    Extract it with: dd if={} bs=1 skip=24 count={} 2>/dev/null | head -200",
-            filepath, stats.min_data_len);
+        println!("    First TMATS payload length: {} bytes.", stats.min_data_len);
+        println!("    For Windows extraction guidance, see docs\\windows.md.");
 
         // L3-ROB-030: Check if TMATS was the first packet
         match tmats_packet_num {
