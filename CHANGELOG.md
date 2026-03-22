@@ -20,7 +20,7 @@ Types of changes
 
 - Added platform-specific documentation under `docs/`, including a Windows usage guide and placeholder Linux/macOS guides. ([`2f16483`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/2f16483136290704bde454ebd0f29b6be5f9b601) by [@joey-huckabee](https://github.com/joey-huckabee))
 - Added a simple `CONTRIBUTING.md` with project scope, development commands, and pull request expectations. ([`2f16483`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/2f16483136290704bde454ebd0f29b6be5f9b601) by [@joey-huckabee](https://github.com/joey-huckabee))
-- Added parser-focused unit tests covering checksum validation, header parsing, and sequence-gap/error tracking.
+- Added parser-focused unit tests covering checksum validation, header parsing, and sequence-gap/error tracking. ([`792a9c2`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/792a9c29bc31256d0a098f1dbb3b91b8dd076678) by [@joey-huckabee](https://github.com/joey-huckabee))
 
 ### Changed
 
