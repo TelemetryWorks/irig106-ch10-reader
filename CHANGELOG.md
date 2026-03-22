@@ -18,17 +18,17 @@ Types of changes
 
 ### Added
 
-- Added platform-specific documentation under `docs/`, including a Windows usage guide and placeholder Linux/macOS guides.
-- Added a simple `CONTRIBUTING.md` with project scope, development commands, and pull request expectations.
+- Added platform-specific documentation under `docs/`, including a Windows usage guide and placeholder Linux/macOS guides. ([`2f16483`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/2f16483136290704bde454ebd0f29b6be5f9b601) by [@joey-huckabee](https://github.com/joey-huckabee))
+- Added a simple `CONTRIBUTING.md` with project scope, development commands, and pull request expectations. ([`2f16483`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/2f16483136290704bde454ebd0f29b6be5f9b601) by [@joey-huckabee](https://github.com/joey-huckabee))
 
 ### Changed
 
-- Reworked the top-level README to link to operating-system-specific documentation and clarify that Windows is the only supported `0.1.0` target.
+- Reworked the top-level README to link to operating-system-specific documentation and clarify that Windows is the only supported `0.1.0` target. ([`2f16483`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/2f16483136290704bde454ebd0f29b6be5f9b601) by [@joey-huckabee](https://github.com/joey-huckabee))
 
 ### Fixed
 
 - Corrected the CLI usage text to reference the actual `ch10r` executable name. ([`6282abf`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/6282abf3a988629e8dad054758ed8f6ff10ca7b3) by [@joey-huckabee](https://github.com/joey-huckabee))
-- Replaced the Unix-specific TMATS extraction command in CLI output with Windows-oriented guidance.
+- Replaced the Unix-specific TMATS extraction command in CLI output with Windows-oriented guidance. ([`2f16483`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/2f16483136290704bde454ebd0f29b6be5f9b601) by [@joey-huckabee](https://github.com/joey-huckabee))
 
 ## [0.1.0] - 2026-03-22
 
