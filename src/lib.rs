@@ -305,9 +305,9 @@ pub fn run_cli() {
         process::exit(1);
     });
 
-    println!("â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—");
-    println!("â•‘            IRIG 106 Chapter 10 File Inspector               â•‘");
-    println!("â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
+    println!("================================================================");
+    println!("IRIG 106 Chapter 10 File Inspector");
+    println!("================================================================");
     println!();
     println!("  File: {}", filepath);
     println!("  Size: {} ({} bytes)", HumanBytes(file_size), file_size);
@@ -332,7 +332,7 @@ pub fn run_cli() {
             "  {:>8}  {:>6}  {:>10}  {:>10}  {:>6}  {:>4}  {:>12}  {:>4}  {}",
             "Packet#", "Ch ID", "PktLen", "DataLen", "Type", "Seq", "RTC", "Chk", "Data Type"
         );
-        println!("  {}", "â”€".repeat(86));
+        println!("  {}", "-".repeat(86));
     }
 
     loop {
@@ -369,7 +369,7 @@ pub fn run_cli() {
                 if next_offset > mmap.len() {
                     let shortfall = next_offset - mmap.len();
                     errors.push(format!(
-                        "Packet {} @ offset {:#X}: packet_length ({}) overruns file by {} bytes â€” \
+                        "Packet {} @ offset {:#X}: packet_length ({}) overruns file by {} bytes - \
                          file is truncated (recording likely interrupted)",
                         packet_num, offset, hdr.packet_length, shortfall
                     ));
@@ -394,7 +394,9 @@ pub fn run_cli() {
                     total_checksum_failures += 1;
                     errors.push(format!(
                         "Packet {} @ offset {:#X}: header checksum FAILED (stored: {:#06X}, computed: {:#06X})",
-                        packet_num, offset, hdr.checksum_stored,
+                        packet_num,
+                        offset,
+                        hdr.checksum_stored,
                         compute_header_checksum(&mmap[offset..offset + HEADER_SIZE])
                     ));
                 }
@@ -408,7 +410,7 @@ pub fn run_cli() {
                 }
 
                 if verbose {
-                    let chk_mark = if hdr.checksum_valid { " âœ“" } else { " âœ—" };
+                    let chk_mark = if hdr.checksum_valid { "OK" } else { "BAD" };
                     println!(
                         "  {:>8}  {:>6}  {:>10}  {:>10}  {:#06X}  {:>4}  {:>12}  {:>4}  {}",
                         packet_num,
@@ -486,32 +488,25 @@ pub fn run_cli() {
         println!();
     }
 
-    println!("â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”");
-    println!("â”‚  SUMMARY                                                     â”‚");
-    println!("â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤");
-    println!("â”‚  Total packets: {:<44}â”‚", packet_num);
-    println!("â”‚  Channels found: {:<43}â”‚", channels.len());
+    println!("SUMMARY");
+    println!("-------");
+    println!("  Total packets: {}", packet_num);
+    println!("  Channels found: {}", channels.len());
     println!(
-        "â”‚  Bytes parsed: {:<45}â”‚",
-        format!("{} of {}", HumanBytes(offset as u64), HumanBytes(file_size))
+        "  Bytes parsed: {} of {}",
+        HumanBytes(offset as u64),
+        HumanBytes(file_size)
     );
     if total_checksum_failures == 0 {
-        println!("â”‚  Header checksums: âœ“ ALL PASSED{:<29}â”‚", "");
+        println!("  Header checksums: ALL PASSED");
     } else {
-        println!(
-            "â”‚  Header checksums: âœ— {} FAILED{:<29}â”‚",
-            total_checksum_failures, ""
-        );
+        println!("  Header checksums: {} FAILED", total_checksum_failures);
     }
     if total_sequence_gaps == 0 {
-        println!("â”‚  Sequence numbers: âœ“ NO GAPS{:<32}â”‚", "");
+        println!("  Sequence numbers: NO GAPS");
     } else {
-        println!(
-            "â”‚  Sequence numbers: âœ— {} GAPS detected{:<24}â”‚",
-            total_sequence_gaps, ""
-        );
+        println!("  Sequence numbers: {} GAPS detected", total_sequence_gaps);
     }
-    println!("â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜");
     println!();
 
     println!("  CHANNELS:");
@@ -519,7 +514,7 @@ pub fn run_cli() {
         "  {:>6}  {:>10}  {:>10}  {:>12}  {:>8}  {:>8}  {}",
         "Ch ID", "Packets", "Type", "Total Data", "Min Pkt", "Max Pkt", "Description"
     );
-    println!("  {}", "â”€".repeat(80));
+    println!("  {}", "-".repeat(80));
 
     for (&ch_id, stats) in &channels {
         println!(
@@ -550,7 +545,7 @@ pub fn run_cli() {
             if stats.sequence_gaps > 0 {
                 warnings.push(format!("seq gaps: {}", stats.sequence_gaps));
             }
-            println!("  {:>6}  âš   {}", "", warnings.join(", "));
+            println!("  {:>6}  WARNING  {}", "", warnings.join(", "));
         }
     }
 
@@ -558,7 +553,7 @@ pub fn run_cli() {
 
     println!("  DATA TYPES:");
     println!("  {:>8}  {:>10}  {}", "Type", "Packets", "Description");
-    println!("  {}", "â”€".repeat(60));
+    println!("  {}", "-".repeat(60));
 
     for (&dt, &count) in &type_counts {
         println!("  {:#06X}    {:>10}  {}", dt, count, data_type_name(dt));
@@ -567,7 +562,7 @@ pub fn run_cli() {
     println!();
 
     if !errors.is_empty() {
-        println!("  âš  ISSUES ({}):", errors.len());
+        println!("  ISSUES ({}):", errors.len());
         for (i, e) in errors.iter().enumerate() {
             println!("    {}. {}", i + 1, e);
             if i >= 19 {
@@ -582,7 +577,7 @@ pub fn run_cli() {
 
     if has_tmats {
         let stats = channels.get(&0).unwrap();
-        println!("  âœ“ TMATS PRESENT on Channel 0 ({}).", HumanBytes(stats.total_data_bytes));
+        println!("  TMATS PRESENT on Channel 0 ({}).", HumanBytes(stats.total_data_bytes));
         println!("    TMATS contains the recording configuration and EU calibration coefficients");
         println!("    (polynomial coefficients for converting raw sensor counts to engineering units).");
         println!("    First TMATS payload length: {} bytes.", stats.min_data_len);
@@ -590,20 +585,20 @@ pub fn run_cli() {
 
         match tmats_packet_num {
             Some(0) => {
-                println!("    âœ“ TMATS is packet #0 (correct per IRIG 106).");
+                println!("    TMATS is packet #0 (correct per IRIG 106).");
             }
             Some(n) => {
-                println!("    âš  TMATS found at packet #{} instead of packet #0.", n);
+                println!("    WARNING: TMATS found at packet #{} instead of packet #0.", n);
                 println!("      IRIG 106 requires TMATS as the first packet. This file may have");
                 println!("      been modified, concatenated, or the recorder is non-compliant.");
             }
             None => {}
         }
     } else {
-        println!("  âš  TMATS NOT FOUND â€” Channel 0 with data type 0x00 is missing.");
+        println!("  TMATS NOT FOUND - Channel 0 with data type 0x00 is missing.");
         println!("    Per IRIG 106, the first packet in a compliant CH.10 file must be TMATS.");
         println!("    Without TMATS, the following are unavailable:");
-        println!("      - EU calibration coefficients (rawâ†’engineering unit conversion polynomials)");
+        println!("      - EU calibration coefficients (raw-to-engineering unit conversion polynomials)");
         println!("      - Channel configuration metadata (source definitions, sample rates)");
         println!("      - Recording session parameters");
         println!("    The file is still structurally parseable, but payload data cannot be");

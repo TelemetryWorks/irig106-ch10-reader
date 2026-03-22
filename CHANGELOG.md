@@ -30,6 +30,7 @@ Types of changes
 
 - Corrected the CLI usage text to reference the actual `ch10r` executable name. ([`6282abf`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/6282abf3a988629e8dad054758ed8f6ff10ca7b3) by [@joey-huckabee](https://github.com/joey-huckabee))
 - Replaced the Unix-specific TMATS extraction command in CLI output with Windows-oriented guidance. ([`2f16483`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/2f16483136290704bde454ebd0f29b6be5f9b601) by [@joey-huckabee](https://github.com/joey-huckabee))
+- Replaced Unicode-heavy and garbled terminal output with ASCII-safe formatting for Windows console compatibility.
 
 ## [0.1.0] - 2026-03-22
 
