@@ -112,6 +112,6 @@ fn channel_stats_tracks_gaps_checksums_and_flags() {
     assert_eq!(stats.last_sequence, Some(9));
     assert_eq!(stats.last_rtc, 2);
     assert_eq!(errors.len(), 1);
-    assert!(errors[0].contains("sequence gap"));
-    assert!(errors[0].contains("expected 8, got 9"));
+    assert!(errors[0].contains("expected 8 got 9"));
+    assert!(errors[0].contains("Packet 12 Ch 5"));
 }
