@@ -18,7 +18,7 @@ Types of changes
 
 ### Fixed
 
-- Corrected the CLI usage text to reference the actual `ch10r` executable name.
+- Corrected the CLI usage text to reference the actual `ch10r` executable name. ([`6282abf`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/6282abf3a988629e8dad054758ed8f6ff10ca7b3) by [@joey-huckabee](https://github.com/joey-huckabee))
 
 ## [0.1.0] - 2026-03-22
 
