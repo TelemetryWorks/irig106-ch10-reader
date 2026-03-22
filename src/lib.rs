@@ -101,44 +101,44 @@ impl PacketHeader {
     }
 }
 
-fn data_type_name(dt: u8) -> &'static str {
+fn data_type_parts(dt: u8) -> (&'static str, &'static str, &'static str) {
     match dt {
-        0x00 => "Computer Generated - Format 0 (TMATS Setup)",
-        0x01 => "Computer Generated - Format 1 (Events)",
-        0x02 => "Computer Generated - Format 2 (Recording Index)",
-        0x03 => "Computer Generated - Format 3 (Recording Events)",
-        0x04 => "Computer Generated - Format 4",
-        0x09 => "PCM - Format 0 (IRIG PCM)",
-        0x0A => "PCM - Format 1 (IRIG PCM Packed)",
-        0x11 => "Time - Format 1 (IRIG/GPS/RTC)",
-        0x12 => "Time - Format 2 (Digital)",
-        0x19 => "MIL-STD-1553 - Format 1",
-        0x1A => "MIL-STD-1553 - Format 2 (16PP194)",
-        0x21 => "Analog - Format 1",
-        0x29 => "Discrete - Format 1",
-        0x30 => "Message - Format 0",
-        0x38 => "ARINC 429 - Format 0",
-        0x40 => "Video - Format 0 (MPEG-2 / H.264)",
-        0x41 => "Video - Format 1 (JPEG 2000)",
-        0x42 => "Video - Format 2 (H.264)",
-        0x43 => "Video - Format 3",
-        0x44 => "Video - Format 4 (H.265)",
-        0x48 => "Image - Format 0 (Still Image)",
-        0x49 => "Image - Format 1 (Dynamic Image)",
-        0x4A => "Image - Format 2",
-        0x50 => "UART - Format 0",
-        0x58 => "IEEE 1394 - Format 0",
-        0x59 => "IEEE 1394 - Format 1",
-        0x60 => "Parallel - Format 0",
-        0x68 => "Ethernet - Format 0 (MAC Frames)",
-        0x69 => "Ethernet - Format 1",
-        0x70 => "TSPI/CTS - Format 0",
-        0x71 => "TSPI/CTS - Format 1",
-        0x72 => "TSPI/CTS - Format 2",
-        0x78 => "CAN Bus",
-        0x79 => "Fibre Channel - Format 0",
-        0x7A => "Fibre Channel - Format 1",
-        _ => "Unknown / Reserved",
+        0x00 => ("Computer Generated", "Format 0", "TMATS Setup"),
+        0x01 => ("Computer Generated", "Format 1", "Events"),
+        0x02 => ("Computer Generated", "Format 2", "Recording Index"),
+        0x03 => ("Computer Generated", "Format 3", "Recording Events"),
+        0x04 => ("Computer Generated", "Format 4", ""),
+        0x09 => ("PCM", "Format 0", "IRIG PCM"),
+        0x0A => ("PCM", "Format 1", "IRIG PCM Packed"),
+        0x11 => ("Time", "Format 1", "IRIG/GPS/RTC"),
+        0x12 => ("Time", "Format 2", "Digital"),
+        0x19 => ("MIL-STD-1553", "Format 1", ""),
+        0x1A => ("MIL-STD-1553", "Format 2", "16PP194"),
+        0x21 => ("Analog", "Format 1", ""),
+        0x29 => ("Discrete", "Format 1", ""),
+        0x30 => ("Message", "Format 0", ""),
+        0x38 => ("ARINC 429", "Format 0", ""),
+        0x40 => ("Video", "Format 0", "MPEG-2 / H.264"),
+        0x41 => ("Video", "Format 1", "JPEG 2000"),
+        0x42 => ("Video", "Format 2", "H.264"),
+        0x43 => ("Video", "Format 3", ""),
+        0x44 => ("Video", "Format 4", "H.265"),
+        0x48 => ("Image", "Format 0", "Still Image"),
+        0x49 => ("Image", "Format 1", "Dynamic Image"),
+        0x4A => ("Image", "Format 2", ""),
+        0x50 => ("UART", "Format 0", ""),
+        0x58 => ("IEEE 1394", "Format 0", ""),
+        0x59 => ("IEEE 1394", "Format 1", ""),
+        0x60 => ("Parallel", "Format 0", ""),
+        0x68 => ("Ethernet", "Format 0", "MAC Frames"),
+        0x69 => ("Ethernet", "Format 1", ""),
+        0x70 => ("TSPI/CTS", "Format 0", ""),
+        0x71 => ("TSPI/CTS", "Format 1", ""),
+        0x72 => ("TSPI/CTS", "Format 2", ""),
+        0x78 => ("CAN Bus", "", ""),
+        0x79 => ("Fibre Channel", "Format 0", ""),
+        0x7A => ("Fibre Channel", "Format 1", ""),
+        _ => ("Unknown / Reserved", "", ""),
     }
 }
 
@@ -513,18 +513,29 @@ pub fn run_cli() {
     println!();
 
     println!(
-        "{:<7}  {:<40}  {:<8}  {:>12}  {:>10}  {:>8}  {:>8}",
-        "Channel", "Data Type", "Type Num", "Packet Count", "Data Bytes", "Min Data", "Max Data"
+        "{:<7}  {:<22}  {:<12}  {:<22}  {:<8}  {:>12}  {:>10}  {:>8}  {:>8}",
+        "Channel",
+        "Data Type",
+        "Data Format",
+        "Data Detail",
+        "Type Num",
+        "Packet Count",
+        "Data Bytes",
+        "Min Data",
+        "Max Data"
     );
-    println!("{}", "-".repeat(105));
+    println!("{}", "-".repeat(129));
     for (&ch_id, stats) in &channels {
+        let (type_name, format_name, detail_name) = data_type_parts(stats.data_type);
         let type_num = format!("0x{:02X}", stats.data_type);
         let packet_count = CommaInt(stats.packet_count).to_string();
         let data_bytes = HumanBytes(stats.total_data_bytes).to_string();
         println!(
-            "{:>7}  {:<40}  {:>8}  {:>12}  {:>10}  {:>8}  {:>8}",
+            "{:>7}  {:<22}  {:<12}  {:<22}  {:>8}  {:>12}  {:>10}  {:>8}  {:>8}",
             ch_id,
-            data_type_name(stats.data_type),
+            type_name,
+            format_name,
+            detail_name,
             type_num,
             packet_count,
             data_bytes,

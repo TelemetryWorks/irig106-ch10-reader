@@ -28,6 +28,7 @@ Types of changes
 - Reworked the top-level README to link to operating-system-specific documentation and clarify that Windows is the only supported `0.1.0` target. ([`2f16483`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/2f16483136290704bde454ebd0f29b6be5f9b601) by [@joey-huckabee](https://github.com/joey-huckabee))
 - Redesigned the default CLI output into a left-aligned summary plus a single consolidated channel/data-type table. ([`da3fc84`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/da3fc845cf15f1ac6b7c8434202bd7d5f9450fca) by [@joey-huckabee](https://github.com/joey-huckabee))
 - Moved verbose packet listing to the end of the output after the default summary. ([`da3fc84`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/da3fc845cf15f1ac6b7c8434202bd7d5f9450fca) by [@joey-huckabee](https://github.com/joey-huckabee))
+- Split the channel table description into aligned `Data Type`, `Data Format`, and `Data Detail` columns for clearer reading.
 
 ### Fixed
 
