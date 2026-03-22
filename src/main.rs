@@ -328,7 +328,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
-        eprintln!("Usage: ch10-reader <file.ch10> [--packets] [--limit N]");
+        eprintln!("Usage: ch10r <file.ch10> [--packets] [--limit N]");
         eprintln!();
         eprintln!("Options:");
         eprintln!("  --packets   Print every packet header (verbose)");

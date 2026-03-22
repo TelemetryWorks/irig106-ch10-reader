@@ -16,6 +16,10 @@ Types of changes
 <!-- release-notes -->
 ## [Unreleased]
 
+### Fixed
+
+- Corrected the CLI usage text to reference the actual `ch10r` executable name.
+
 ## [0.1.0] - 2026-03-22
 
 ### Added
