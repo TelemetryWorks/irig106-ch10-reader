@@ -139,6 +139,15 @@ fn cli_keeps_same_channel_id_with_different_data_types_separate() {
         0x03,
         [1, 0, 0, 0, 0, 0],
     ));
+    file_bytes.extend_from_slice(&make_header(
+        704,
+        HEADER_SIZE as u32,
+        0,
+        2,
+        0x00,
+        0x02,
+        [2, 0, 0, 0, 0, 0],
+    ));
 
     let unique = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -161,11 +170,13 @@ fn cli_keeps_same_channel_id_with_different_data_types_separate() {
     );
 
     let stdout = String::from_utf8(output.stdout).expect("utf8 output");
-    assert!(stdout.contains("Channels                 : 1"));
+    assert!(stdout.contains("Channels                 : 2"));
     assert!(stdout.contains("TMATS                    : Present"));
     assert!(stdout.contains("Indexing                 : Enabled"));
+    assert!(stdout.contains("Events                   : Enabled"));
     assert!(stdout.contains("      0  Computer Generated      Format 1      TMATS Setup"));
     assert!(stdout.contains("      0  Computer Generated      Format 3      Recording Index"));
+    assert!(stdout.contains("    704  Computer Generated      Format 2      Recording Events"));
 }
 
 #[test]
@@ -195,4 +206,5 @@ fn cli_reports_indexing_not_found_when_no_index_packets_exist() {
     let stdout = String::from_utf8(output.stdout).expect("utf8 output");
     assert!(stdout.contains("TMATS                    : Not found"));
     assert!(stdout.contains("Indexing                 : Not found"));
+    assert!(stdout.contains("Events                   : Not found"));
 }

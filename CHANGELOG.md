@@ -25,6 +25,7 @@ Types of changes
 - Corrected additional Chapter 10 data type mappings so PCM `0x09` reports as `Format 1` and later video, image, Ethernet, IEEE 1394, TSPI/CTS, and Fibre Channel labels align with the IRIG type table.
 - Added a CLI regression test covering multiple channel-zero packet types in the same file.
 - Added an `Indexing` summary line that reports `Enabled` when recording index packets (`0x03`) are present.
+- Added an `Events` summary line that reports `Enabled` when recording event packets (`0x02`) are present.
 
 ### Changed
 
