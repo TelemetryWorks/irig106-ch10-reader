@@ -20,16 +20,16 @@ Types of changes
 
 ### Fixed
 
-- Split summary rows by both channel ID and data type so channel `0` TMATS and index packets are reported separately instead of being merged.
-- Corrected the computer-generated data type labels so TMATS is recognized as `0x01` and recording index data as `0x03`.
-- Corrected additional Chapter 10 data type mappings so PCM `0x09` reports as `Format 1` and later video, image, Ethernet, IEEE 1394, TSPI/CTS, and Fibre Channel labels align with the IRIG type table.
-- Added a CLI regression test covering multiple channel-zero packet types in the same file.
-- Added an `Indexing` summary line that reports `Enabled` when recording index packets (`0x03`) are present.
-- Added an `Events` summary line that reports `Enabled` when recording event packets (`0x02`) are present.
+- Split summary rows by both channel ID and data type so channel `0` TMATS and index packets are reported separately instead of being merged. ([`a2163c1`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/a2163c1) by [@joey-huckabee](https://github.com/joey-huckabee))
+- Corrected the computer-generated data type labels so TMATS is recognized as `0x01` and recording index data as `0x03`. ([`a2163c1`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/a2163c1) by [@joey-huckabee](https://github.com/joey-huckabee))
+- Corrected additional Chapter 10 data type mappings so PCM `0x09` reports as `Format 1` and later video, image, Ethernet, IEEE 1394, TSPI/CTS, and Fibre Channel labels align with the IRIG type table. ([`bb843a6`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/bb843a6) by [@joey-huckabee](https://github.com/joey-huckabee))
+- Added CLI regression tests covering multiple channel-zero packet types and indexing/event summary detection. ([`a2163c1`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/a2163c1), [`9fcf292`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/9fcf292), [`dc798e6`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/dc798e6) by [@joey-huckabee](https://github.com/joey-huckabee))
+- Added an `Indexing` summary line that reports `Enabled` when recording index packets (`0x03`) are present. ([`9fcf292`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/9fcf292) by [@joey-huckabee](https://github.com/joey-huckabee))
+- Added an `Events` summary line that reports `Enabled` when recording event packets (`0x02`) are present. ([`dc798e6`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/dc798e6) by [@joey-huckabee](https://github.com/joey-huckabee))
 
 ### Changed
 
-- Moved the standards mapping assertions into a dedicated `src/lib_tests.rs` test module so production code and test code are clearly separated.
+- Moved the standards mapping assertions into a dedicated `src/lib_tests.rs` test module so production code and test code are clearly separated. ([`bb843a6`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/bb843a6) by [@joey-huckabee](https://github.com/joey-huckabee))
 
 ## [0.1.0] - 2026-03-22
 
