@@ -16,6 +16,14 @@ Types of changes
 <!-- release-notes -->
 ## [Unreleased]
 
+## [0.1.1] - 2026-03-23
+
+### Fixed
+
+- Split summary rows by both channel ID and data type so channel `0` TMATS and index packets are reported separately instead of being merged.
+- Corrected the computer-generated data type labels so TMATS is recognized as `0x01` and recording index data as `0x03`.
+- Added a CLI regression test covering multiple channel-zero packet types in the same file.
+
 ## [0.1.0] - 2026-03-22
 
 ### Added

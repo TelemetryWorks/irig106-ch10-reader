@@ -1,7 +1,9 @@
 use irig106_ch10_reader::{
-    compute_header_checksum, is_valid_header, ChannelStats, PacketHeader, HEADER_SIZE,
-    SYNC_PATTERN,
+    ChannelStats, HEADER_SIZE, PacketHeader, SYNC_PATTERN, compute_header_checksum, is_valid_header,
 };
+use std::fs;
+use std::process::Command;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 fn make_header(
     channel_id: u16,
@@ -114,4 +116,53 @@ fn channel_stats_tracks_gaps_checksums_and_flags() {
     assert_eq!(errors.len(), 1);
     assert!(errors[0].contains("expected 8 got 9"));
     assert!(errors[0].contains("Packet 12 Ch 5"));
+}
+
+#[test]
+fn cli_keeps_same_channel_id_with_different_data_types_separate() {
+    let mut file_bytes = Vec::new();
+    file_bytes.extend_from_slice(&make_header(
+        0,
+        HEADER_SIZE as u32,
+        0,
+        0,
+        0x00,
+        0x01,
+        [0; 6],
+    ));
+    file_bytes.extend_from_slice(&make_header(
+        0,
+        HEADER_SIZE as u32,
+        0,
+        1,
+        0x00,
+        0x03,
+        [1, 0, 0, 0, 0, 0],
+    ));
+
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("valid system time")
+        .as_nanos();
+    let path = std::env::temp_dir().join(format!("ch10r-split-channel-zero-{unique}.ch10"));
+    fs::write(&path, file_bytes).expect("write test ch10 file");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_ch10r"))
+        .arg(&path)
+        .output()
+        .expect("run ch10r");
+
+    let _ = fs::remove_file(&path);
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let stdout = String::from_utf8(output.stdout).expect("utf8 output");
+    assert!(stdout.contains("Channels                 : 1"));
+    assert!(stdout.contains("TMATS                    : Present"));
+    assert!(stdout.contains("      0  Computer Generated      Format 1      TMATS Setup"));
+    assert!(stdout.contains("      0  Computer Generated      Format 3      Recording Index"));
 }

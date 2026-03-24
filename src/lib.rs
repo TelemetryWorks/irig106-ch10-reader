@@ -1,5 +1,5 @@
 use memmap2::Mmap;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::env;
 use std::fmt;
 use std::fs::File;
@@ -59,9 +59,7 @@ impl PacketHeader {
         let sequence_number = buf[13];
         let packet_flags = buf[14];
         let data_type = buf[15];
-        let rtc = u64::from_le_bytes([
-            buf[16], buf[17], buf[18], buf[19], buf[20], buf[21], 0, 0,
-        ]);
+        let rtc = u64::from_le_bytes([buf[16], buf[17], buf[18], buf[19], buf[20], buf[21], 0, 0]);
         let checksum_stored = u16::from_le_bytes([buf[22], buf[23]]);
         let checksum_computed = compute_header_checksum(buf);
 
@@ -103,10 +101,10 @@ impl PacketHeader {
 
 fn data_type_parts(dt: u8) -> (&'static str, &'static str, &'static str) {
     match dt {
-        0x00 => ("Computer Generated", "Format 0", "TMATS Setup"),
-        0x01 => ("Computer Generated", "Format 1", "Events"),
-        0x02 => ("Computer Generated", "Format 2", "Recording Index"),
-        0x03 => ("Computer Generated", "Format 3", "Recording Events"),
+        0x00 => ("Computer Generated", "Format 0", "User Defined"),
+        0x01 => ("Computer Generated", "Format 1", "TMATS Setup"),
+        0x02 => ("Computer Generated", "Format 2", "Recording Events"),
+        0x03 => ("Computer Generated", "Format 3", "Recording Index"),
         0x04 => ("Computer Generated", "Format 4", ""),
         0x09 => ("PCM", "Format 0", "IRIG PCM"),
         0x0A => ("PCM", "Format 1", "IRIG PCM Packed"),
@@ -144,10 +142,10 @@ fn data_type_parts(dt: u8) -> (&'static str, &'static str, &'static str) {
 
 fn data_type_short(dt: u8) -> &'static str {
     match dt {
-        0x00 => "TMATS",
-        0x01 => "CompGen-1",
-        0x02 => "RecIndex",
-        0x03 => "RecEvent",
+        0x00 => "CompGen-0",
+        0x01 => "TMATS",
+        0x02 => "RecEvent",
+        0x03 => "RecIndex",
         0x04 => "CompGen-4",
         0x09 => "PCM-0",
         0x0A => "PCM-1",
@@ -329,7 +327,8 @@ pub fn run_cli() {
 
     let mut offset: usize = 0;
     let mut packet_num: u64 = 0;
-    let mut channels: BTreeMap<u16, ChannelStats> = BTreeMap::new();
+    let mut channels: BTreeMap<(u16, u8), ChannelStats> = BTreeMap::new();
+    let mut channel_ids: BTreeSet<u16> = BTreeSet::new();
     let mut issues: Vec<String> = Vec::new();
     let mut checksum_failures: Vec<String> = Vec::new();
     let mut sequence_gaps: Vec<String> = Vec::new();
@@ -375,8 +374,9 @@ pub fn run_cli() {
                         "Packet {} @ offset {:#X}: packet_length ({}) overruns file by {} bytes - file is truncated (recording likely interrupted)",
                         packet_num, offset, hdr.packet_length, shortfall
                     ));
+                    channel_ids.insert(hdr.channel_id);
                     channels
-                        .entry(hdr.channel_id)
+                        .entry((hdr.channel_id, hdr.data_type))
                         .and_modify(|s| s.update(&hdr, packet_num, &mut sequence_gaps))
                         .or_insert_with(|| ChannelStats::new(&hdr));
                     packet_num += 1;
@@ -402,7 +402,7 @@ pub fn run_cli() {
                     ));
                 }
 
-                if hdr.channel_id == 0 && hdr.data_type == 0x00 {
+                if hdr.channel_id == 0 && hdr.data_type == 0x01 {
                     has_tmats = true;
                 }
 
@@ -422,8 +422,9 @@ pub fn run_cli() {
                     ));
                 }
 
+                channel_ids.insert(hdr.channel_id);
                 channels
-                    .entry(hdr.channel_id)
+                    .entry((hdr.channel_id, hdr.data_type))
                     .and_modify(|s| s.update(&hdr, packet_num, &mut sequence_gaps))
                     .or_insert_with(|| ChannelStats::new(&hdr));
 
@@ -486,14 +487,17 @@ pub fn run_cli() {
     println!("File Name                : {}", file_name);
     println!("File Size                : {} bytes", CommaInt(file_size));
     println!("Packets                  : {}", CommaInt(packet_num));
-    println!("Channels                 : {}", channels.len());
+    println!("Channels                 : {}", channel_ids.len());
     println!("Recording Date / Time    : Not available");
     println!("Data Start Time          : Not available");
     println!("Data Stop Time           : Not available");
     if total_checksum_failures == 0 {
         println!("Header Checksums         : All passed");
     } else {
-        println!("Header Checksums         : {} failed", total_checksum_failures);
+        println!(
+            "Header Checksums         : {} failed",
+            total_checksum_failures
+        );
         for detail in &checksum_failures {
             println!("                           {}", detail);
         }
@@ -501,7 +505,10 @@ pub fn run_cli() {
     if total_sequence_gaps == 0 {
         println!("Sequence Numbers         : No gaps");
     } else {
-        println!("Sequence Numbers         : {} gaps detected", total_sequence_gaps);
+        println!(
+            "Sequence Numbers         : {} gaps detected",
+            total_sequence_gaps
+        );
         for detail in &sequence_gaps {
             println!("                           {}", detail);
         }
@@ -525,7 +532,7 @@ pub fn run_cli() {
         "Max Data"
     );
     println!("{}", "-".repeat(129));
-    for (&ch_id, stats) in &channels {
+    for (&(ch_id, _data_type), stats) in &channels {
         let (type_name, format_name, detail_name) = data_type_parts(stats.data_type);
         let type_num = format!("0x{:02X}", stats.data_type);
         let packet_count = CommaInt(stats.packet_count).to_string();
