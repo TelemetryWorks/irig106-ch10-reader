@@ -364,6 +364,7 @@ pub fn run_cli() {
     let mut total_checksum_failures: u64 = 0;
     let mut total_sequence_gaps: u64 = 0;
     let mut has_tmats = false;
+    let mut has_index = false;
     let mut verbose_rows: Vec<String> = Vec::new();
 
     loop {
@@ -433,6 +434,9 @@ pub fn run_cli() {
 
                 if hdr.channel_id == 0 && hdr.data_type == 0x01 {
                     has_tmats = true;
+                }
+                if hdr.data_type == 0x03 {
+                    has_index = true;
                 }
 
                 if verbose {
@@ -545,6 +549,10 @@ pub fn run_cli() {
     println!(
         "TMATS                    : {}",
         if has_tmats { "Present" } else { "Not found" }
+    );
+    println!(
+        "Indexing                 : {}",
+        if has_index { "Enabled" } else { "Not found" }
     );
     println!();
 
