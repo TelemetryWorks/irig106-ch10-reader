@@ -22,7 +22,12 @@ Types of changes
 
 - Split summary rows by both channel ID and data type so channel `0` TMATS and index packets are reported separately instead of being merged.
 - Corrected the computer-generated data type labels so TMATS is recognized as `0x01` and recording index data as `0x03`.
+- Corrected additional Chapter 10 data type mappings so PCM `0x09` reports as `Format 1` and later video, image, Ethernet, IEEE 1394, TSPI/CTS, and Fibre Channel labels align with the IRIG type table.
 - Added a CLI regression test covering multiple channel-zero packet types in the same file.
+
+### Changed
+
+- Moved the standards mapping assertions into a dedicated `src/lib_tests.rs` test module so production code and test code are clearly separated.
 
 ## [0.1.0] - 2026-03-22
 
