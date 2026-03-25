@@ -20,13 +20,14 @@ Types of changes
 
 ### Added
 
-- Added first-class `-h` / `--help` and `-V` / `--version` CLI switches. Version output now comes from Cargo package metadata and includes the package name, binary name, and package description.
+- Added first-class `-h` / `--help` and `-V` / `--version` CLI switches. Version output now comes from Cargo package metadata and includes the package name, binary name, and package description. ([`f8fea01`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/f8fea01) by [@joey-huckabee](https://github.com/joey-huckabee))
 
 ### Changed
 
-- Expanded the help text to show the current package metadata and the supported CLI options in one place.
-- Added integration tests covering the release-facing help and version output.
-- Added rustdoc-style crate, module, and public API comments across the source to make the release surface easier to navigate and maintain.
+- Expanded the help text to show the current package metadata and the supported CLI options in one place. ([`f8fea01`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/f8fea01) by [@joey-huckabee](https://github.com/joey-huckabee))
+- Added integration tests covering the release-facing help and version output. ([`f8fea01`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/f8fea01) by [@joey-huckabee](https://github.com/joey-huckabee))
+- Added rustdoc-style crate, module, and public API comments across the source to make the release surface easier to navigate and maintain. ([`f8fea01`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/f8fea01) by [@joey-huckabee](https://github.com/joey-huckabee))
+- Bumped the crate version to `0.1.2` and refreshed the release-facing platform documentation for the new CLI entry points. ([`8d1f228`](https://github.com/TelemetryWorks/irig106-ch10-reader/commit/8d1f228) by [@joey-huckabee](https://github.com/joey-huckabee))
 
 ## [0.1.1] - 2026-03-23
 
