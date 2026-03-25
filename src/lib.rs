@@ -1,3 +1,9 @@
+//! Core parsing types and CLI entry points for `irig106-ch10-reader`.
+//!
+//! The crate focuses on fast structural inspection of IRIG 106 Chapter 10
+//! recordings. It validates packet headers, walks packet boundaries, and prints
+//! a summary-oriented CLI report instead of decoding payload contents.
+
 use memmap2::Mmap;
 use std::collections::{BTreeMap, BTreeSet};
 use std::env;
@@ -6,22 +12,42 @@ use std::fs::File;
 use std::path::Path;
 use std::process;
 
+/// IRIG 106 Chapter 10 sync word in little-endian form.
 pub const SYNC_PATTERN: u16 = 0xEB25;
+/// Size in bytes of a Chapter 10 primary packet header.
 pub const HEADER_SIZE: usize = 24;
+const PACKAGE_NAME: &str = env!("CARGO_PKG_NAME");
+const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
+const PACKAGE_DESCRIPTION: &str = env!("CARGO_PKG_DESCRIPTION");
 
+/// Parsed fields from a Chapter 10 primary packet header.
 #[derive(Debug)]
 pub struct PacketHeader {
+    /// Packet channel identifier.
     pub channel_id: u16,
+    /// Total packet length in bytes, including the header.
     pub packet_length: u32,
+    /// Declared payload length in bytes.
     pub data_length: u32,
+    /// Sequence number from the packet header.
     pub sequence_number: u8,
+    /// Raw packet flag bits.
     pub packet_flags: u8,
+    /// Chapter 10 data type code.
     pub data_type: u8,
+    /// Raw 48-bit RTC value widened to `u64`.
     pub rtc: u64,
+    /// Stored header checksum from the packet.
     pub checksum_stored: u16,
+    /// Whether the computed header checksum matches `checksum_stored`.
     pub checksum_valid: bool,
 }
 
+/// Computes the 16-bit checksum for a Chapter 10 primary header.
+///
+/// # Panics
+///
+/// Panics if `buf` is shorter than [`HEADER_SIZE`].
 pub fn compute_header_checksum(buf: &[u8]) -> u16 {
     let mut sum: u32 = 0;
     for i in 0..11 {
@@ -31,6 +57,7 @@ pub fn compute_header_checksum(buf: &[u8]) -> u16 {
     (sum & 0xFFFF) as u16
 }
 
+/// Returns `true` when `buf` starts with a structurally valid primary header.
 pub fn is_valid_header(buf: &[u8]) -> bool {
     if buf.len() < HEADER_SIZE {
         return false;
@@ -45,6 +72,9 @@ pub fn is_valid_header(buf: &[u8]) -> bool {
 }
 
 impl PacketHeader {
+    /// Parses a Chapter 10 primary header from the start of `buf`.
+    ///
+    /// Returns `None` when the buffer is too short or the sync word is invalid.
     pub fn parse(buf: &[u8]) -> Option<Self> {
         if buf.len() < HEADER_SIZE {
             return None;
@@ -76,10 +106,12 @@ impl PacketHeader {
         })
     }
 
+    /// Returns `true` when the packet indicates a secondary header is present.
     pub fn has_secondary_header(&self) -> bool {
         (self.packet_flags & 0x04) != 0
     }
 
+    /// Returns the checksum type encoded in the packet flags.
     pub fn checksum_type(&self) -> &'static str {
         match self.packet_flags & 0x03 {
             0 => "None",
@@ -90,10 +122,12 @@ impl PacketHeader {
         }
     }
 
+    /// Returns `true` when the packet overflow flag is set.
     pub fn data_overflow(&self) -> bool {
         (self.packet_flags & 0x40) != 0
     }
 
+    /// Returns `true` when the RTC sync error flag is set.
     pub fn rtc_sync_error(&self) -> bool {
         (self.packet_flags & 0x80) != 0
     }
@@ -210,22 +244,36 @@ fn data_type_short(dt: u8) -> &'static str {
     }
 }
 
+/// Running statistics for a single `(channel_id, data_type)` pair.
 pub struct ChannelStats {
+    /// Data type associated with the tracked channel row.
     pub data_type: u8,
+    /// Number of packets seen for the row.
     pub packet_count: u64,
+    /// Sum of declared payload bytes.
     pub total_data_bytes: u64,
+    /// Sum of packet bytes, including headers.
     pub total_packet_bytes: u64,
+    /// Smallest declared payload size seen.
     pub min_data_len: u32,
+    /// Largest declared payload size seen.
     pub max_data_len: u32,
+    /// RTC from the most recently processed packet.
     pub last_rtc: u64,
+    /// Count of packets with the overflow flag set.
     pub overflow_count: u64,
+    /// Count of packets with the RTC sync error flag set.
     pub sync_error_count: u64,
+    /// Count of packets whose header checksum failed validation.
     pub checksum_failures: u64,
+    /// Count of detected sequence discontinuities.
     pub sequence_gaps: u64,
+    /// Last seen sequence number for gap detection.
     pub last_sequence: Option<u8>,
 }
 
 impl ChannelStats {
+    /// Creates a new statistics row seeded from the first packet seen.
     pub fn new(hdr: &PacketHeader) -> Self {
         ChannelStats {
             data_type: hdr.data_type,
@@ -243,6 +291,9 @@ impl ChannelStats {
         }
     }
 
+    /// Updates the statistics row with a newly parsed packet.
+    ///
+    /// Any detected sequence gap message is appended to `sequence_gaps`.
     pub fn update(&mut self, hdr: &PacketHeader, packet_num: u64, sequence_gaps: &mut Vec<String>) {
         self.packet_count += 1;
         self.total_data_bytes += hdr.data_length as u64;
@@ -305,15 +356,40 @@ impl fmt::Display for CommaInt {
     }
 }
 
+/// Runs the CLI using the binary name inferred from the build metadata.
 pub fn run_cli() {
+    run_cli_with_binary_name(binary_name());
+}
+
+/// Runs the CLI with an explicit compiled binary name for help and version text.
+pub fn run_cli_with_binary_name(compiled_binary_name: &'static str) {
     let args: Vec<String> = env::args().collect();
+    let program_name = args
+        .first()
+        .and_then(|arg| Path::new(arg).file_name())
+        .and_then(|name| name.to_str())
+        .unwrap_or(compiled_binary_name);
+
+    if args
+        .iter()
+        .skip(1)
+        .any(|arg| arg == "--help" || arg == "-h")
+    {
+        print_help(program_name, compiled_binary_name, false);
+        return;
+    }
+
+    if args
+        .iter()
+        .skip(1)
+        .any(|arg| arg == "--version" || arg == "-V")
+    {
+        print_version(program_name, compiled_binary_name);
+        return;
+    }
 
     if args.len() < 2 {
-        eprintln!("Usage: ch10r <file.ch10> [--packets] [--limit N]");
-        eprintln!();
-        eprintln!("Options:");
-        eprintln!("  --packets   Print every packet header (verbose)");
-        eprintln!("  --limit N   Only process first N packets");
+        print_help(program_name, compiled_binary_name, true);
         process::exit(1);
     }
 
@@ -347,7 +423,12 @@ pub fn run_cli() {
         process::exit(1);
     }
 
-    let mmap = unsafe { Mmap::map(&file) }.unwrap_or_else(|e| {
+    let mmap = unsafe {
+        // Safety: the file handle remains alive for the lifetime of the map and
+        // the mapping is treated as immutable byte data.
+        Mmap::map(&file)
+    }
+    .unwrap_or_else(|e| {
         eprintln!("Error: Failed to memory-map file: {}", e);
         process::exit(1);
     });
@@ -622,5 +703,51 @@ pub fn run_cli() {
             println!("{row}");
         }
         println!();
+    }
+}
+
+fn print_help(program_name: &str, compiled_binary_name: &str, is_error: bool) {
+    if is_error {
+        eprintln!("{PACKAGE_DESCRIPTION}");
+        eprintln!();
+        eprintln!("Usage: {program_name} <file.ch10> [OPTIONS]");
+        eprintln!();
+        eprintln!("Options:");
+        eprintln!("  -h, --help      Show this help message");
+        eprintln!("  -V, --version   Show version information");
+        eprintln!("  --packets       Print every packet header (verbose)");
+        eprintln!("  --limit N       Only process first N packets");
+        eprintln!();
+        eprintln!("Package: {PACKAGE_NAME}");
+        eprintln!("Binary:  {compiled_binary_name}");
+        eprintln!("Version: {PACKAGE_VERSION}");
+    } else {
+        println!("{PACKAGE_DESCRIPTION}");
+        println!();
+        println!("Usage: {program_name} <file.ch10> [OPTIONS]");
+        println!();
+        println!("Options:");
+        println!("  -h, --help      Show this help message");
+        println!("  -V, --version   Show version information");
+        println!("  --packets       Print every packet header (verbose)");
+        println!("  --limit N       Only process first N packets");
+        println!();
+        println!("Package: {PACKAGE_NAME}");
+        println!("Binary:  {compiled_binary_name}");
+        println!("Version: {PACKAGE_VERSION}");
+    }
+}
+
+fn print_version(program_name: &str, compiled_binary_name: &str) {
+    println!("{program_name} {PACKAGE_VERSION}");
+    println!("package: {PACKAGE_NAME}");
+    println!("binary: {compiled_binary_name}");
+    println!("description: {PACKAGE_DESCRIPTION}");
+}
+
+fn binary_name() -> &'static str {
+    match option_env!("CARGO_BIN_NAME") {
+        Some(name) => name,
+        None => PACKAGE_NAME,
     }
 }

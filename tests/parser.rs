@@ -208,3 +208,43 @@ fn cli_reports_indexing_not_found_when_no_index_packets_exist() {
     assert!(stdout.contains("Indexing                 : Not found"));
     assert!(stdout.contains("Events                   : Not found"));
 }
+
+#[test]
+fn cli_help_shows_options_and_cargo_metadata() {
+    let output = Command::new(env!("CARGO_BIN_EXE_ch10r"))
+        .arg("--help")
+        .output()
+        .expect("run ch10r --help");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+
+    let stdout = String::from_utf8(output.stdout).expect("utf8 output");
+    assert!(stdout.contains(env!("CARGO_PKG_DESCRIPTION")));
+    assert!(stdout.contains("Usage: ch10r"));
+    assert!(stdout.contains("-V, --version"));
+    assert!(stdout.contains("--packets"));
+    assert!(stdout.contains("--limit N"));
+    assert!(stdout.contains(&format!("Package: {}", env!("CARGO_PKG_NAME"))));
+    assert!(stdout.contains(&format!("Version: {}", env!("CARGO_PKG_VERSION"))));
+    assert!(stdout.contains("Binary:  ch10r"));
+}
+
+#[test]
+fn cli_version_shows_version_and_metadata() {
+    let output = Command::new(env!("CARGO_BIN_EXE_ch10r"))
+        .arg("--version")
+        .output()
+        .expect("run ch10r --version");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+
+    let stdout = String::from_utf8(output.stdout).expect("utf8 output");
+    let first_line = stdout.lines().next().expect("version line");
+    assert!(first_line.contains("ch10r"));
+    assert!(first_line.contains(env!("CARGO_PKG_VERSION")));
+    assert!(stdout.contains(&format!("package: {}", env!("CARGO_PKG_NAME"))));
+    assert!(stdout.contains("binary: ch10r"));
+    assert!(stdout.contains(&format!("description: {}", env!("CARGO_PKG_DESCRIPTION"))));
+}
