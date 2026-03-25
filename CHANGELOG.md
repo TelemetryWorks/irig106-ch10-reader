@@ -16,6 +16,18 @@ Types of changes
 <!-- release-notes -->
 ## [Unreleased]
 
+## [0.1.2] - 2026-03-24
+
+### Added
+
+- Added first-class `-h` / `--help` and `-V` / `--version` CLI switches. Version output now comes from Cargo package metadata and includes the package name, binary name, and package description.
+
+### Changed
+
+- Expanded the help text to show the current package metadata and the supported CLI options in one place.
+- Added integration tests covering the release-facing help and version output.
+- Added rustdoc-style crate, module, and public API comments across the source to make the release surface easier to navigate and maintain.
+
 ## [0.1.1] - 2026-03-23
 
 ### Fixed

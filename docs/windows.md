@@ -1,7 +1,7 @@
 # Windows
 
 `irig106-ch10-reader` currently targets Windows first. If you are building or
-testing `0.1.0`, this is the primary guide to follow.
+testing the project on Windows, this is the primary guide to follow.
 
 ## Build
 
@@ -18,6 +18,8 @@ target\release\ch10r.exe
 ## Usage
 
 ```powershell
+.\target\release\ch10r.exe --help
+.\target\release\ch10r.exe --version
 .\target\release\ch10r.exe recording.ch10
 .\target\release\ch10r.exe recording.ch10 --packets
 .\target\release\ch10r.exe recording.ch10 --packets --limit 100

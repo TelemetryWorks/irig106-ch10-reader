@@ -21,7 +21,7 @@ structural summaries, not deep payload decoding.
 - [Linux](docs/linux.md)
 - [macOS](docs/macos.md)
 
-Windows is the only supported executable target for `0.1.0`. The Linux and
+Windows is the only supported executable target for `0.1.2`. The Linux and
 macOS guides are placeholders for future support planning.
 
 ## Build

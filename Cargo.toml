@@ -1,6 +1,6 @@
 [package]
 name = "irig106-ch10-reader"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Fast structural reads of IRIG 106 Chapter 10 files."
 

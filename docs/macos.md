@@ -1,13 +1,13 @@
 # macOS
 
-macOS is not a supported release target for `0.1.0`.
+macOS is not a supported release target for `0.1.2`.
 
 This document exists so platform-specific documentation has a stable location as
 the project grows.
 
 ## Current status
 
-- No macOS executable is published for `0.1.0`
+- No macOS executable is published for `0.1.2`
 - macOS-specific testing and packaging are not part of this release
 - Behavior may work during development, but it is not yet a supported platform
 
