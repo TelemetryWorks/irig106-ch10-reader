@@ -2,6 +2,7 @@
 name = "irig106-ch10-reader"
 version = "0.1.2"
 edition = "2024"
+rust-version = "1.85"
 description = "Fast structural reads of IRIG 106 Chapter 10 files."
 
 [dependencies]
