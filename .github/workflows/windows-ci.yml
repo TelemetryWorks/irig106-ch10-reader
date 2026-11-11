@@ -48,3 +48,8 @@ jobs:
         run: cargo +${{ matrix.toolchain }} test --locked --jobs 2 -- --test-threads=2
       - name: Compile release executable
         run: cargo +${{ matrix.toolchain }} build --locked --release --jobs 2
+      - name: Verify release executable was produced
+        run: |
+          if (-not (Test-Path -LiteralPath 'target/release/ch10r.exe' -PathType Leaf)) {
+            throw 'Release executable target/release/ch10r.exe was not produced'
+          }
