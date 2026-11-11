@@ -695,8 +695,8 @@ pub fn run_cli_with_binary_name(compiled_binary_name: &'static str) {
         println!("Packet Listing");
         println!("--------------");
         println!(
-            "{:>8}  {:>6}  {:>10}  {:>10}  {:>6}  {:>4}  {:>12}  {:>4}  {}",
-            "Packet#", "Ch ID", "PktLen", "DataLen", "Type", "Seq", "RTC", "Chk", "Data Type"
+            "{:>8}  {:>6}  {:>10}  {:>10}  {:>6}  {:>4}  {:>12}  {:>4}  Data Type",
+            "Packet#", "Ch ID", "PktLen", "DataLen", "Type", "Seq", "RTC", "Chk"
         );
         println!("{}", "-".repeat(86));
         for row in &verbose_rows {
