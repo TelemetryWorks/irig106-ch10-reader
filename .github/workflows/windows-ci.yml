@@ -1,0 +1,50 @@
+name: Windows CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Windows / Rust ${{ matrix.toolchain }}
+    runs-on: windows-2022
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        toolchain: ['1.85.0', stable]
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      CARGO_BUILD_JOBS: '2'
+      RUST_TEST_THREADS: '2'
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable snapshot, 2026-10-16 (no versioned releases)
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - name: Log exact tool versions
+        run: |
+          rustc +${{ matrix.toolchain }} --version --verbose
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo +${{ matrix.toolchain }} --version --verbose
+      - name: Build all targets with the lockfile
+        run: cargo +${{ matrix.toolchain }} build --locked --all-targets --jobs 2
+      - name: Run all existing tests
+        run: cargo +${{ matrix.toolchain }} test --locked --jobs 2 -- --test-threads=2
+      - name: Compile release executable
+        run: cargo +${{ matrix.toolchain }} build --locked --release --jobs 2
