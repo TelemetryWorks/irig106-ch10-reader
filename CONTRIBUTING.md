@@ -19,16 +19,20 @@ cargo test
 [Windows CI](.github/workflows/windows-ci.yml) runs on pushes to `main` and pull
 requests using Windows Server 2022 with MSVC. It checks Rust `1.85.0` (the minimum
 supported version) and current `stable`, and logs the exact Rust/Cargo versions.
-Each job builds all targets, runs the existing tests (including doc tests), and
-compiles the release executable with `--locked` to preserve `Cargo.lock`.
+Each job checks formatting and Clippy with warnings denied, builds all targets,
+runs the existing tests (including doc tests), and compiles the release executable.
+Cargo builds, tests and Clippy use `--locked` to preserve `Cargo.lock`.
 It also verifies that `target/release/ch10r.exe` was produced.
 
 To reproduce a job on Windows, use an installed toolchain (`1.85.0` below, or
 replace it with `stable`):
 
 ```powershell
+rustup component add --toolchain 1.85.0 rustfmt clippy
 rustc +1.85.0 --version --verbose
 cargo +1.85.0 --version --verbose
+cargo +1.85.0 fmt --check
+cargo +1.85.0 clippy --locked --all-targets --jobs 2 -- -D warnings
 cargo +1.85.0 build --locked --all-targets --jobs 2
 cargo +1.85.0 test --locked --jobs 2 -- --test-threads=2
 cargo +1.85.0 build --locked --release --jobs 2

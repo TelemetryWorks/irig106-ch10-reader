@@ -37,11 +37,16 @@ jobs:
         uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable snapshot, 2026-10-16 (no versioned releases)
         with:
           toolchain: ${{ matrix.toolchain }}
+          components: rustfmt, clippy
       - name: Log exact tool versions
         run: |
           rustc +${{ matrix.toolchain }} --version --verbose
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo +${{ matrix.toolchain }} --version --verbose
+      - name: Check Rust formatting
+        run: cargo +${{ matrix.toolchain }} fmt --check
+      - name: Check all targets with Clippy
+        run: cargo +${{ matrix.toolchain }} clippy --locked --all-targets --jobs 2 -- -D warnings
       - name: Build all targets with the lockfile
         run: cargo +${{ matrix.toolchain }} build --locked --all-targets --jobs 2
       - name: Run all existing tests
