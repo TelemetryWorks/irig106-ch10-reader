@@ -1,3 +1,15 @@
+> **Archived** — Owner decision, 2026-11-22. This reader is superseded by
+> [irig106-core](https://github.com/TelemetryWorks/irig106-core) for packet reading
+> and the future `irig106 inspect` command in
+> [irig106-cli](https://github.com/TelemetryWorks/irig106-cli) for inspection.
+> `irig106 inspect` is future work, not a command supplied by this repository.
+>
+> Published Windows releases **v0.1.0–v0.1.2** and Git history are retained.
+> [Download the existing releases](https://github.com/TelemetryWorks/irig106-ch10-reader/releases)
+> and see the preserved [Windows usage notes](docs/windows.md).
+> The [feature and test inventory](docs/FEATURES-FOR-CORE.md) is input for core's
+> requirements. The original project description follows for historical reference.
+
 # irig106-ch10-reader
 
 Fast structural reads of IRIG 106 Chapter 10 files.
