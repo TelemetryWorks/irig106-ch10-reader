@@ -1,0 +1,136 @@
+name: Build and qualify binary payload
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+    outputs:
+      rust-version:
+        value: ${{ jobs.package.outputs.rust-version }}
+
+permissions:
+  contents: read
+
+env:
+  CARGO_BUILD_JOBS: '2'
+  RUST_TEST_THREADS: '2'
+  PYTHONDONTWRITEBYTECODE: '1'
+  RUSTUP_TOOLCHAIN: '1.99.1'
+
+jobs:
+  windows:
+    name: Qualify every Windows binary target
+    runs-on: windows-2022
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: '1.99.1'
+          components: clippy, rustfmt
+          targets: x86_64-pc-windows-msvc
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.11'
+      - name: Log versions and run Windows qualification
+        shell: bash
+        run: |
+          rustc +1.99.1 --version --verbose
+          cargo +1.99.1 --version --verbose
+          cargo +1.99.1 fmt --check
+          cargo +1.99.1 clippy --locked --all-targets --jobs 2 -- -D warnings
+          cargo +1.99.1 test --locked --all-targets --jobs 2 -- --test-threads=2
+          cargo +1.99.1 test --locked --doc --jobs 2 -- --test-threads=2
+          cargo +1.99.1 build --locked --release --bins --target x86_64-pc-windows-msvc --jobs 2
+      - name: Archive and smoke-test every binary from this build
+        env:
+          VERSION: ${{ inputs.version }}
+        shell: bash
+        run: python scripts/release/pipeline.py binary-package --directory target/binary-payload --version "$VERSION"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: qualified-windows
+          path: target/binary-payload/*.zip
+          if-no-files-found: error
+          retention-days: 30
+
+  package:
+    name: Package verified crate and SBOM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      rust-version: ${{ steps.rust.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: '1.99.1'
+      - name: Log and freeze exact toolchain
+        id: rust
+        run: |
+          rustc +1.99.1 --version --verbose
+          cargo +1.99.1 --version --verbose
+          test "$(rustc +1.99.1 --version | cut -d' ' -f2)" = 1.99.1
+          echo 'version=1.99.1' >> "$GITHUB_OUTPUT"
+      - name: Release-control tests
+        run: python3 -m unittest discover -s scripts/release -p 'test_*.py' -v
+      - name: Package with packaged-source compilation (not a Linux support promise)
+        run: cargo +1.99.1 package --locked --jobs 2
+      - name: Generate pinned source-graph CycloneDX SBOM
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          cargo +1.99.1 install cargo-cyclonedx --version 0.5.9 --locked --jobs 2
+          cargo +1.99.1 cyclonedx --manifest-path "target/package/irig106-ch10-reader-$VERSION/Cargo.toml" --all-features --target all --format json --spec-version 1.5
+          mkdir -p target/crate-payload
+          cp "target/package/irig106-ch10-reader-$VERSION.crate" target/crate-payload/
+          cp "target/package/irig106-ch10-reader-$VERSION/irig106-ch10-reader.cdx.json" target/crate-payload/sbom.cdx.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: qualified-crate
+          path: target/crate-payload/
+          if-no-files-found: error
+          retention-days: 30
+
+  collect:
+    name: Freeze qualified payload
+    needs: [windows, package]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: qualified-windows
+          path: release-artifacts
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: qualified-crate
+          path: release-artifacts
+      - name: Require exact payload and generate one checksum manifest
+        env:
+          VERSION: ${{ inputs.version }}
+        run: python3 scripts/release/pipeline.py assemble --directory release-artifacts --version "$VERSION"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-${{ inputs.version }}
+          path: release-artifacts/
+          if-no-files-found: error
+          retention-days: 90

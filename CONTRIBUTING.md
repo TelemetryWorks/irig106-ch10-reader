@@ -58,3 +58,9 @@ When reporting a bug, include:
 - What you expected
 - What happened instead
 - Whether the file was known-good, truncated, or corrupted
+
+## Release pipeline
+
+See [RELEASING.md](docs/RELEASING.md) for the separate trusted-publishing workflow,
+unsigned PR dry runs, historical compatibility and required owner bootstrap.
+Normal Windows CI above never publishes releases.

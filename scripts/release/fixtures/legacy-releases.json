@@ -1,0 +1,14 @@
+{
+  "0.1.2": {
+    "ch10r-v0.1.2-windows-x86_64.zip": "7cca750cb34eac86b25e1be0619832250dbd2547ce213087201a42637eb64a3e",
+    "ch10r-v0.1.2-windows-x86_64.zip.sha256": "e1907ce54b0cada08c9a1b5993eea2d8d23fda8a2bceb039f705c6b073ab9194"
+  },
+  "0.1.1": {
+    "ch10r-v0.1.1-windows-x86_64.zip": "e021e6ad96655a1318c7f1d9257e6b86bc0b7be2a69f1afd720a12fa20dbbec4",
+    "ch10r-v0.1.1-windows-x86_64.zip.sha256": "eca02a96bcb9cb50601d8695185c2548972cee87a4bb276eb6536e2e804c3108"
+  },
+  "0.1.0": {
+    "ch10r-v0.1.0-windows-x86_64.zip": "f9e758e2055da2df276538fc34f0198da93adacd2533808d9694ee2df8f7db09",
+    "ch10r-v0.1.0-windows-x86_64.zip.sha256": "691a8fb52ed4d621322fb351fb6cb8e4447f851624df913ae5ab1ec00de1cbbf"
+  }
+}

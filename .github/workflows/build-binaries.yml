@@ -1,0 +1,68 @@
+name: Build and sign own binary release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      publish:
+        required: true
+        type: boolean
+    outputs:
+      rust-version:
+        value: ${{ jobs.qualify.outputs.rust-version }}
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build-binaries-core.yml # zizmor: ignore[self-repository] fixed local caller revision
+    with:
+      version: ${{ inputs.version }}
+
+  sign:
+    name: Checksums and attestations
+    needs: qualify
+    if: >-
+      inputs.publish && github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # Delegated only on tag pushes; nested signer uses OIDC.
+      attestations: write # Retain provenance for this builder output only.
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-${{ inputs.version }}
+          path: release-artifacts
+      - name: Validate this builder's fixed output before signing
+        env:
+          VERSION: ${{ inputs.version }}
+        run: python3 scripts/release/pipeline.py validate --directory release-artifacts --version "$VERSION"
+      - name: Attest every crate, binary archive and SBOM from this builder
+        id: provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-checksums: release-artifacts/SHA256SUMS
+      - name: Freeze the single provenance bundle in an immutable sidecar
+        env:
+          VERSION: ${{ inputs.version }}
+          BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+        run: |
+          mkdir release-attestations
+          cp "$BUNDLE" "release-attestations/irig106-ch10-reader-$VERSION.intoto.jsonl"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-${{ inputs.version }}-attestations
+          path: release-attestations/
+          if-no-files-found: error
+          retention-days: 90
