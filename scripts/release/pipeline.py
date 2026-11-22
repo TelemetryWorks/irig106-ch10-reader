@@ -484,6 +484,22 @@ def assemble(directory, value):
     validate_bundle(root, value)
 
 
+def merge_sidecar(directory, sidecar, value):
+    root, side = Path(directory), Path(sidecar)
+    validate_bundle(root, value)
+    name = f"{NAME}-{value}.intoto.jsonl"
+    if {p.name for p in root.iterdir()} != expected_files(value) | {"SHA256SUMS"}:
+        raise ValueError("Payload contains unexpected sidecar or filename collision")
+    if {p.name for p in side.iterdir()} != {name} or (side / name).is_symlink() or not (side / name).is_file():
+        raise ValueError("Sidecar artifact must contain only the fixed provenance file")
+    raw = (side / name).read_bytes()
+    if not raw:
+        raise ValueError("Empty provenance sidecar")
+    with (root / name).open("xb") as output:
+        output.write(raw)
+    validate_bundle(root, value)
+
+
 def require_publication(value):
     """Defense in depth for script entry points as well as independent YAML job guards."""
     if (os.environ.get("GITHUB_EVENT_NAME") != "push"
@@ -569,10 +585,11 @@ def install_check(value, toolchain):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["gate", "validate", "assemble", "binary-package", "smoke", "repackage", "known-good", "legacy", "prepare", "registry", "github-release", "verify", "install", "download", "signatures"])
+    parser.add_argument("command", choices=["gate", "validate", "assemble", "binary-package", "smoke", "repackage", "known-good", "legacy", "prepare", "registry", "github-release", "verify", "install", "download", "signatures", "merge-sidecar"])
     parser.add_argument("--directory", default="release-artifacts")
     parser.add_argument("--version")
     parser.add_argument("--rust-version")
+    parser.add_argument("--sidecar")
     args = parser.parse_args()
     if args.command == "gate":
         gate()
@@ -587,7 +604,9 @@ def main():
     value = version()
     if value != args.version:
         raise ValueError("Gate version differs from checked-out manifest")
-    if args.command == "validate":
+    if args.command == "merge-sidecar":
+        merge_sidecar(args.directory, args.sidecar, value)
+    elif args.command == "validate":
         validate_bundle(args.directory, value)
     elif args.command == "assemble":
         assemble(args.directory, value)

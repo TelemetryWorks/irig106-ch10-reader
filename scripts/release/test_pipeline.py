@@ -267,6 +267,16 @@ class Controls(unittest.TestCase):
             with self.assertRaises(ValueError): p.known_good()
             download.assert_not_called()
 
+    def test_sidecar_transport_rejects_collisions_and_extra_files(self):
+        side=self.root/'sidecar';side.mkdir()
+        name=f'{p.NAME}-{self.value}.intoto.jsonl'
+        (side/name).write_text('{}\n')
+        (side/'sbom.cdx.json').write_text('replacement')
+        with self.assertRaises(ValueError): p.merge_sidecar(self.bundle,side,self.value)
+        (side/'sbom.cdx.json').unlink()
+        p.merge_sidecar(self.bundle,side,self.value)
+        with self.assertRaises(ValueError): p.merge_sidecar(self.bundle,side,self.value)
+
     def test_workflow_permission_boundary_and_immutable_output(self):
         core=(REPO_ROOT/'.github/workflows/build-binaries-core.yml').read_text()
         wrapper=(REPO_ROOT/'.github/workflows/build-binaries.yml').read_text()
